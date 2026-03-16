@@ -20,6 +20,11 @@
             <h3>{{ m.title }}</h3>
         </a>
         <p class="genres">{{ m.genres | replace("|", ", ") }}</p>
+        {% if m.tags %}
+        <div class="tags">
+            {% for tag in m.tags %}<span class="tag">{{ tag }}</span>{% endfor %}
+        </div>
+        {% endif %}
         <div class="meta">
             <span class="rating" title="Average rating">{{ "%.1f"|format(m.avg_rating) }} / 5</span>
             <span class="count">({{ m.num_ratings }} ratings)</span>

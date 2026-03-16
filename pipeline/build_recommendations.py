@@ -42,6 +42,35 @@ def build_content_profiles(movies, tags):
     return movies
 
 
+def aggregate_display_tags(tags):
+    """Produce a deduplicated, frequency-ranked tag list per movie."""
+    normalized = tags.copy()
+    normalized["tag_lower"] = normalized["tag"].astype(str).str.strip().str.lower()
+
+    counts = (
+        normalized.groupby(["movieId", "tag_lower"])
+        .size()
+        .reset_index(name="freq")
+    )
+    originals = (
+        normalized.groupby(["movieId", "tag_lower"])["tag"]
+        .agg(lambda x: x.mode().iloc[0])
+        .reset_index()
+        .rename(columns={"tag": "display_tag"})
+    )
+    merged = counts.merge(originals, on=["movieId", "tag_lower"])
+    merged = merged.sort_values(
+        ["movieId", "freq", "display_tag"], ascending=[True, False, True]
+    )
+    tag_lists = (
+        merged.groupby("movieId")["display_tag"]
+        .apply(list)
+        .reset_index()
+        .rename(columns={"display_tag": "tags"})
+    )
+    return tag_lists
+
+
 def compute_ratings_stats(ratings):
     """Compute average rating and count per movie."""
     stats = ratings.groupby("movieId").agg(
@@ -98,13 +127,18 @@ def main():
     movies["avg_rating"] = movies["avg_rating"].fillna(0)
     movies["num_ratings"] = movies["num_ratings"].fillna(0).astype(int)
 
+    print("Aggregating display tags ...")
+    tag_lists = aggregate_display_tags(tags)
+    movies = movies.merge(tag_lists, on="movieId", how="left")
+    movies["tags"] = movies["tags"].apply(lambda x: x if isinstance(x, list) else [])
+
     sim_matrix = build_similarity(movies)
 
     print("Extracting top similar movies ...")
     similarity_map = extract_top_similar(movies, sim_matrix)
 
     # Prepare movies DataFrame for saving (drop working columns)
-    movies_out = movies[["movieId", "title", "genres", "avg_rating", "num_ratings"]].copy()
+    movies_out = movies[["movieId", "title", "genres", "avg_rating", "num_ratings", "tags"]].copy()
 
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 

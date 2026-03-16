@@ -129,5 +129,5 @@ def api_search():
 
     df = MOVIES[MOVIES["title"].str.contains(q, case=False, na=False)]
     df = df.sort_values("num_ratings", ascending=False).head(10)
-    results = df[["movieId", "title", "genres", "avg_rating"]].to_dict("records")
+    results = df[["movieId", "title", "genres", "avg_rating", "tags"]].to_dict("records")
     return jsonify(results)
