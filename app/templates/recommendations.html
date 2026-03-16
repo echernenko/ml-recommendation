@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}My Recommendations - MovieRec{% endblock %}
+
+{% block content %}
+<h1>My Recommendations</h1>
+
+{% if not liked_any %}
+    <p class="empty">You haven't liked any movies yet. <a href="{{ url_for('index') }}">Browse movies</a> and like some to get personalized recommendations!</p>
+{% elif not movies %}
+    <p class="empty">No recommendations found. Try liking more movies!</p>
+{% else %}
+<div class="movie-grid">
+    {% for m in movies %}
+    <div class="movie-card">
+        <a href="{{ url_for('movie_detail', movie_id=m.movieId) }}">
+            <h3>{{ m.title }}</h3>
+        </a>
+        <p class="genres">{{ m.genres | replace("|", ", ") }}</p>
+        <div class="meta">
+            <span class="rating">{{ "%.1f"|format(m.avg_rating) }} / 5</span>
+            <span class="count">({{ m.num_ratings }} ratings)</span>
+            <span class="similarity">Score: {{ m.agg_score }}</span>
+        </div>
+        <form method="post" action="{{ url_for('toggle_like', movie_id=m.movieId) }}">
+            <input type="hidden" name="next" value="{{ request.url }}">
+            <button type="submit" class="like-btn {% if m.movieId in liked_ids %}liked{% endif %}">
+                {% if m.movieId in liked_ids %}&#9829; Liked{% else %}&#9825; Like{% endif %}
+            </button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}
