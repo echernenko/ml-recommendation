@@ -1,6 +1,6 @@
 # MovieRec - ML Movie Recommendation Engine
 
-A content-based movie recommendation system built with scikit-learn and Flask. An offline ML pipeline computes movie similarity using TF-IDF on genres and user tags, and a web app lets you browse, search, like movies, and get personalized recommendations.
+A content-based movie recommendation system built with scikit-learn and Flask. An offline ML pipeline computes movie similarity using TF-IDF (Term Frequency–Inverse Document Frequency) on genres and user tags, and a web app lets you browse, search, like movies, and get personalized recommendations.
 
 ## ML Approach
 
